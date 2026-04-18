@@ -3,11 +3,14 @@ package com.example.identity.service;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
 import com.example.identity.dto.request.UserCreationRequest;
@@ -17,6 +20,7 @@ import com.example.identity.entity.User;
 import com.example.identity.enums.Role;
 import com.example.identity.exception.CustomException;
 import com.example.identity.repository.UserRepository;
+import com.nimbusds.jwt.JWT;
 
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -131,10 +135,21 @@ public class UserService {
 
     @PreAuthorize("isAuthenticated()")
     public ProfileResponse getMyProfile() {
-        String name  = SecurityContextHolder.getContext().getAuthentication().getName();
+        Authentication authenticate = SecurityContextHolder.getContext().getAuthentication();
+
+        String name  = authenticate.getName();
+
+        Object details  = authenticate.getDetails();
+
+        Jwt jwt =  (Jwt) authenticate.getCredentials();
+
+        Map<String, Object> claims = jwt.getClaims();
+        String user_id = (String) claims.get("user_id");
+
+        
         User user = userRepository.findByUsername(name).orElseThrow(
             () -> new RuntimeException("User not found")
-        );
+        );  
 
         int currentYear = java.time.Year.now().getValue();
         if (user.getBirthYear() > currentYear) {

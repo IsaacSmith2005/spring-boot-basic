@@ -23,6 +23,7 @@ public class ApplicationInitConfig {
 
     private final PasswordEncoder passwordEncoder;
     
+    // khởi tạo user admin mặc định
     @Bean
     ApplicationRunner applicationRunner(UserRepository userRepository) {
         return args -> {

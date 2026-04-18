@@ -27,47 +27,51 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    private static final String[] PUBLIC_ENDPOINTS = {"/api/users", "/auth/login", "/auth/introspect", "/auth/logout"}; // endpoints public
+    private static final String[] PUBLIC_ENDPOINTS = {"/api/users", "/auth/login", "/auth/introspect", "/auth/logout", "/auth/refresh"}; // endpoints public
 
     @Value("${jwt.secret}")
     private String signerKey;
 
     @Autowired
-    private CustomJwtDecoder customJwtDecoder;
+    private CustomJwtDecoder customJwtDecoder; // decoder for jwt
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
             .authorizeHttpRequests(request -> 
                 request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll()
-                .anyRequest().authenticated()); // all other endpoints require authentication
+                .anyRequest().authenticated()); // tất cả các endpoint khác đều yêu cầu authentication
 
+        // cấu hình resource server cho oauth2
         httpSecurity.oauth2ResourceServer(oauth2 ->  
-            oauth2.jwt(jwtConfigurer -> 
-                jwtConfigurer.decoder(customJwtDecoder)
-                .jwtAuthenticationConverter(jwtAuthenticationConverter())
+            oauth2.jwt(jwtConfigurer ->
+                jwtConfigurer.decoder(customJwtDecoder) // decoder for jwt
+                .jwtAuthenticationConverter(jwtAuthenticationConverter()) // converter for jwt
             )
         );  
 
-        httpSecurity.csrf(AbstractHttpConfigurer::disable); // disable csrf for oauth2
+        httpSecurity.csrf(AbstractHttpConfigurer::disable); // tắt csrf cho oauth2
 
         return httpSecurity.build();
     }
 
+    // converter for jwt
     @Bean
     JwtAuthenticationConverter jwtAuthenticationConverter() {
-        JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
-        jwtGrantedAuthoritiesConverter.setAuthorityPrefix("ROLE_");
-        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
-        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter);
+        JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter(); // converter for jwt
+        jwtGrantedAuthoritiesConverter.setAuthorityPrefix("ROLE_"); // prefix for role
+        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter(); // converter for jwt
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter); // set converter for jwt
         return jwtAuthenticationConverter;
     }
 
+    // bỏ qua các endpoint công khai
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.ignoring().requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS);
     }
 
+    // decoder cho jwt
     @Bean
     JwtDecoder jwtDecoder() {
         SecretKeySpec secretKeySpec = new SecretKeySpec(signerKey.getBytes(), "HS256");
@@ -77,6 +81,7 @@ public class SecurityConfig {
                 .build();
     }
 
+    // password encoder
     @Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(10);

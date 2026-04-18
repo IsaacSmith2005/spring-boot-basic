@@ -13,6 +13,7 @@ import com.example.identity.dto.response.IntrospectResponse;
 import com.example.identity.dto.request.AuthenticationRequest;
 import com.example.identity.dto.request.IntrospectRequest;
 import com.example.identity.dto.request.LogoutRequest;
+import com.example.identity.dto.request.RefreshRequest;
 
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -49,6 +50,14 @@ public class AuthenticationController {
         authenticationService.logout(request);
         return APIResponse.<String>builder()
                 .result("Đã logout thành công")
+                .build();
+    }
+
+    @PostMapping("/refresh")
+    APIResponse<AuthenticationResponse> refreshToken(@RequestBody RefreshRequest request) throws JOSEException, ParseException {
+        var result = authenticationService.refreshToken(request);
+        return APIResponse.<AuthenticationResponse>builder()
+                .result(result)
                 .build();
     }
 }

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandle {
+    // Xử lý các exception chung
     @ExceptionHandler(RuntimeException.class)
     ResponseEntity<APIResponse<Object>> handleRuntimeException(RuntimeException e) {
         APIResponse<Object> response = new APIResponse<>();
@@ -20,6 +21,7 @@ public class GlobalExceptionHandle {
         return ResponseEntity.badRequest().body(response);
     }
 
+    // Xử lý validation exception
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
     ResponseEntity<APIResponse<Object>> handlingValidation(MethodArgumentNotValidException e) {
         APIResponse<Object> response = new APIResponse<>();
@@ -31,6 +33,7 @@ public class GlobalExceptionHandle {
         return ResponseEntity.badRequest().body(response);
     }
 
+    // Xử lý custom exception
     @ExceptionHandler(CustomException.class)
     ResponseEntity<APIResponse<Object>> handleCustomException(CustomException e) {
         APIResponse<Object> response = new APIResponse<>();
@@ -42,6 +45,7 @@ public class GlobalExceptionHandle {
         return ResponseEntity.badRequest().body(response);
     }
 
+    // Xử lý authentication exception
     @ExceptionHandler(AuthenticateException.class)
     ResponseEntity<APIResponse<Object>> handleAuthenticationException(AuthenticateException e) {
         String message = e.getMessage();
@@ -52,6 +56,7 @@ public class GlobalExceptionHandle {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 
+    // Xử lý access denied exception
     @ExceptionHandler(AccessDeniedException.class)
     ResponseEntity<APIResponse<Object>> handleAuthorizeException(AccessDeniedException e) {
         APIResponse<Object> response = APIResponse.builder()
@@ -62,6 +67,7 @@ public class GlobalExceptionHandle {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
     }
 
+    // Xử lý jwt exception
     @ExceptionHandler(JwtException.class)
     ResponseEntity<APIResponse<Object>> handleJwtException(JwtException e) {
         APIResponse<Object> response = APIResponse.builder()

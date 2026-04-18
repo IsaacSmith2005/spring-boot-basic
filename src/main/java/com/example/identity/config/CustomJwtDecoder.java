@@ -25,7 +25,8 @@ public class CustomJwtDecoder implements JwtDecoder {
     @Autowired
     private AuthenticationService authenticationService;
 
-    private NimbusJwtDecoder nimbusJwtDecoder = null;
+    // Decoder cho JWT
+    private NimbusJwtDecoder nimbusJwtDecoder = null; 
 
     @Override
     public Jwt decode(String token) throws JwtException {
@@ -35,16 +36,16 @@ public class CustomJwtDecoder implements JwtDecoder {
                     IntrospectRequest.builder().token(token).build());
 
             if (!response.isValid()) {
-                throw new JwtException("Token invalid"); // Message rõ ràng hơn
+                throw new JwtException("Token invalid");
             }
         } catch (JOSEException | ParseException e) {
             throw new JwtException("Token invalid: " + e.getMessage());
         }
 
-        // Tạo decoder nếu chưa có (thử HS256 trước, nếu không được thì HS512)
+        // Tạo decoder nếu chưa có
         if (Objects.isNull(nimbusJwtDecoder)) {
             try {
-                // Thử với HS256 trước (phổ biến nhất)
+                // Test với HS256 trước
                 SecretKeySpec secretKeySpec = new SecretKeySpec(signerKey.getBytes(), "HS256");
                 nimbusJwtDecoder = NimbusJwtDecoder.withSecretKey(secretKeySpec)
                         .macAlgorithm(MacAlgorithm.HS256)
